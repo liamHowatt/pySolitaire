@@ -2,6 +2,13 @@ import pygame
 from math import sin, radians
 from itertools import cycle
 
+def SinGen(speed):
+    for i in cycle(range(360)):
+        i*=speed
+        yield (sin(radians(i))+1)/2
+lineSin = SinGen(4)
+circleSin = SinGen(3)
+
 pygame.init()
 X = 0
 Y = 1
@@ -30,7 +37,11 @@ while True:
         pendingSizeChange = False
         window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 
-    bg.fill((255,255,255))
+    bg.fill((107, 255, 178))
+    linePos = int(lineSin.__next__()*(WS[X]-10))+5
+    pygame.draw.line(bg,(255, 0, 225),(linePos,0),(linePos,WS[Y]),11)
+    pygame.draw.circle(bg, (0, 28, 112), (int(WS[X]/2),int(WS[Y]/2)),
+        int(min(WS[X],WS[Y])*0.375*circleSin.__next__())+10)
 
     window.blit(bg,(0,0))
     pygame.display.flip()
