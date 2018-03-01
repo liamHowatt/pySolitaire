@@ -1,9 +1,12 @@
 # https://github.com/liamHowatt/pySolitaire.git
 
-import pygame
 from random import shuffle
 from sys import platform
-if platform == "windows":
+
+# Import relevant libraries
+import pygame
+
+if platform == "win32":
     import win32api
 
 def getCardName(number):
@@ -20,7 +23,7 @@ cards = list(range(52))
 shuffle(cards) # yes, this function changes the variable value "in place"
 currentCard = -1
 for y in range(7): # arranges cards on table
-    table.append([0]*7)
+    table.append([None]*7)
     for x in range(y,7):
         currentCard += 1
         table[y][x] = cards[currentCard]
@@ -35,17 +38,22 @@ WS = (900,600) # initial window size
 pygame.display.set_caption("Solitaire by Trent and Liam")
 window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
-bg = pygame.Surface(MONITOR_RESOLUTION)
-text = pygame.font.Font("McLaren-Regular.ttf",8)
+bg = pygame.Surface(MONITOR_RESOLUTION, flags=pygame.HWSURFACE)
+text = pygame.font.Font("McLaren-Regular.ttf", 8)
 pendingSizeChange = False
+# Showing a relevant icon to our game
+icon = pygame.image.load("resource/icon.png")
+pygame.display.set_icon(icon)
 
-if platform == "windows":
+# Dynamic Scaling limited to Windows until we find out figure out other system specific calls
+if platform == "win32":
     device = win32api.EnumDisplayDevices()
     settings = win32api.EnumDisplaySettings(device.DeviceName, -1)
     for varName in ['DisplayFrequency']:
+        global refreshRate
         refreshRate = getattr(settings, varName)
 else:
-    refreshRate = 30
+    refreshRate = 60
 
 framecount = 0
 clock = pygame.time.Clock()
@@ -67,12 +75,16 @@ while True:
             window = pygame.display.set_mode(WS, pygame.RESIZABLE)
         print("fps="+str(round(clock.get_fps(),1)))
 
-    while not sum(table[-1]):
+    while table[-1] == [None]*7:
         del(table[-1]) # deletes empty rows from memory
 
     bg.fill((0, 140, 30))
-    pygame.draw.rect(bg, (0,0,0), ((10,10),(25,35)), 3)
-    pygame.draw.rect(bg, (255,255,255), ((10,10),(25,35)), 0)
+    for row in range(len(table)):
+        for column in range(7):
+            if table[row][column] != None:
+                rect = (( (column*(3/22)+(1/22))*WS[X], 10*row+10), (WS[X]*(1/11),WS[X]*(7/55)))
+                pygame.draw.rect(bg, (0,0,0), rect, 3)
+                pygame.draw.rect(bg, (255,255,255), rect, 0) # card outline
 
     window.blit(bg,(0,0))
     pygame.display.flip()
