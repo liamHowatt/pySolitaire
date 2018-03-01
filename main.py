@@ -1,6 +1,18 @@
 import pygame
-from math import sin, radians
-from itertools import cycle
+from random import shuffle
+
+cards = list(range(52))
+# order: hearts, diamonds, clubs, spades
+# order within each suit: A, 2-10, J, Q, K
+shuffle(cards) # yes, this function changes the variable value "in place"
+currentCard = -1
+for y in range(7): # arranges cards on table
+    for x in range(y,7):
+        currentCard += 1
+        cards[currentCard] = [cards[currentCard], False, [x,y]] # is faceUp = False initially
+while currentCard != 51:
+    currentCard += 1
+    cards[currentCard] = [cards[currentCard], False, [-1,-1]] # cards still in the pile
 
 pygame.init()
 X = 0
@@ -11,6 +23,7 @@ window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION)
 pendingSizeChange = False
+somethingMoved = True
 
 framecount = 0
 clock = pygame.time.Clock()
@@ -26,11 +39,13 @@ while True:
             WS = event.size
             pendingSizeChange = True
 
-    if pendingSizeChange and framecount % FPS == 0: # renders size change every second to avoid annoying blinking
-        pendingSizeChange = False
-        window = pygame.display.set_mode(WS, pygame.RESIZABLE)
+    if framecount % FPS == 0: # things that happen every second
+        if pendingSizeChange:  # resizes every second instead of every frame
+            pendingSizeChange = False
+            window = pygame.display.set_mode(WS, pygame.RESIZABLE)
+        print("fps="+str(round(clock.get_fps(),1)))
 
-    bg.fill((255,255,255))
+    bg.fill((0, 140, 30))
 
     window.blit(bg,(0,0))
     pygame.display.flip()
