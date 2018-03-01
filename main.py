@@ -1,18 +1,29 @@
+# https://github.com/liamHowatt/pySolitaire.git
+
 import pygame
 from random import shuffle
 
+def getCardName(number):
+    # order: hearts, diamonds, clubs, spades
+    # order within each suit: A, 2-10, J, Q, K
+    suit = int(number/13)
+    face = number-(suit*13)
+    return ["ace","2","3","4","5","6","7","8","9","10","jack","queen","king"][face]+\
+        " of " + ["hearts","diamonds","clubs","spades"][suit]
+
+table = []
+pile = []
 cards = list(range(52))
-# order: hearts, diamonds, clubs, spades
-# order within each suit: A, 2-10, J, Q, K
 shuffle(cards) # yes, this function changes the variable value "in place"
 currentCard = -1
 for y in range(7): # arranges cards on table
+    table.append([0]*7)
     for x in range(y,7):
         currentCard += 1
-        cards[currentCard] = [cards[currentCard], False, [x,y]] # is faceUp = False initially
+        table[y][x] = cards[currentCard]
 while currentCard != 51:
     currentCard += 1
-    cards[currentCard] = [cards[currentCard], False, [-1,-1]] # cards still in the pile
+    pile.append(cards[currentCard])
 
 pygame.init()
 X = 0
@@ -22,8 +33,8 @@ pygame.display.set_caption("Solitaire by Trent and Liam")
 window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION)
+text = pg.font.Font("McLaren-Regular.ttf",8)
 pendingSizeChange = False
-somethingMoved = True
 
 framecount = 0
 clock = pygame.time.Clock()
@@ -45,7 +56,11 @@ while True:
             window = pygame.display.set_mode(WS, pygame.RESIZABLE)
         print("fps="+str(round(clock.get_fps(),1)))
 
+    while not sum(table[-1]):
+        del(table[-1]) # deletes empty rows from memory
+
     bg.fill((0, 140, 30))
+
 
     window.blit(bg,(0,0))
     pygame.display.flip()
