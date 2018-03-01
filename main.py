@@ -2,7 +2,9 @@
 
 import pygame
 from random import shuffle
-import win32api
+from sys import platform
+if platform == "windows":
+    import win32api
 
 def getCardName(number):
     # order: hearts, diamonds, clubs, spades
@@ -37,10 +39,13 @@ bg = pygame.Surface(MONITOR_RESOLUTION)
 text = pg.font.Font("McLaren-Regular.ttf",8)
 pendingSizeChange = False
 
-device = win32api.EnumDisplayDevices()
-settings = win32api.EnumDisplaySettings(device.DeviceName, -1)
-for varName in ['DisplayFrequency']:
-    refreshRate = getattr(settings, varName)
+if platform == "windows":
+    device = win32api.EnumDisplayDevices()
+    settings = win32api.EnumDisplaySettings(device.DeviceName, -1)
+    for varName in ['DisplayFrequency']:
+        refreshRate = getattr(settings, varName)
+else:
+    refreshRate = 30
 
 framecount = 0
 clock = pygame.time.Clock()
