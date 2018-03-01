@@ -53,7 +53,7 @@ if platform == "win32":
         global refreshRate
         refreshRate = getattr(settings, varName)
 else:
-    refreshRate = 30
+    refreshRate = 60
 
 framecount = 0
 clock = pygame.time.Clock()
