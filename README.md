@@ -3,12 +3,17 @@
 A game of Solitaire
 
 Powered by [Python](https://python.org) and [Pygame](https://pygame.org)
-## Current Objectives:
+## Starting Goals:
 
 · Smooth card movement
 
-· Dynamic sizing
+· Dynamic sizing/scaling of graphics
 
 · RNG Cards
 
 · Winning Celebration
+
+## Accomplished:
+· Dynamic sizing
+
+· Dynamic framerate
