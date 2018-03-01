@@ -1,9 +1,12 @@
 # https://github.com/liamHowatt/pySolitaire.git
 
-import pygame
 from random import shuffle
 from sys import platform
-if platform == "windows":
+
+# Import relevant libraries
+import pygame
+
+if platform == "win32":
     import win32api
 
 def getCardName(number):
@@ -36,13 +39,15 @@ pygame.display.set_caption("Solitaire by Trent and Liam")
 window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION)
-text = pg.font.Font("McLaren-Regular.ttf",8)
+text = pygame.font.Font("McLaren-Regular.ttf", 8)
 pendingSizeChange = False
 
-if platform == "windows":
+# Dynamic Scaling limited to Windows until we find out figure out other system specific calls
+if platform == "win32":
     device = win32api.EnumDisplayDevices()
     settings = win32api.EnumDisplaySettings(device.DeviceName, -1)
     for varName in ['DisplayFrequency']:
+        global refreshRate
         refreshRate = getattr(settings, varName)
 else:
     refreshRate = 30
