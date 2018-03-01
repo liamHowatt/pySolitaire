@@ -41,6 +41,9 @@ MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION)
 text = pygame.font.Font("McLaren-Regular.ttf", 8)
 pendingSizeChange = False
+# Showing a relevant icon to our game
+icon = pygame.image.load("resource/icon.png")
+pygame.display.set_icon(icon)
 
 # Dynamic Scaling limited to Windows until we find out figure out other system specific calls
 if platform == "win32":
