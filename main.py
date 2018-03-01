@@ -36,7 +36,7 @@ pygame.display.set_caption("Solitaire by Trent and Liam")
 window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION)
-text = pg.font.Font("McLaren-Regular.ttf",8)
+text = pygame.font.Font("McLaren-Regular.ttf",8)
 pendingSizeChange = False
 
 if platform == "windows":
@@ -71,7 +71,8 @@ while True:
         del(table[-1]) # deletes empty rows from memory
 
     bg.fill((0, 140, 30))
-
+    pygame.draw.rect(bg, (0,0,0), ((10,10),(25,35)), 3)
+    pygame.draw.rect(bg, (255,255,255), ((10,10),(25,35)), 0)
 
     window.blit(bg,(0,0))
     pygame.display.flip()
