@@ -1,5 +1,6 @@
 import pygame
 from random import shuffle
+import win32api
 
 cards = list(range(52))
 # order: hearts, diamonds, clubs, spades
@@ -25,9 +26,14 @@ bg = pygame.Surface(MONITOR_RESOLUTION)
 pendingSizeChange = False
 somethingMoved = True
 
+device = win32api.EnumDisplayDevices()
+settings = win32api.EnumDisplaySettings(device.DeviceName, -1)
+for varName in ['DisplayFrequency']:
+    refreshRate = getattr(settings, varName)
+
 framecount = 0
 clock = pygame.time.Clock()
-FPS = 30
+FPS = refreshRate
 while True:
     clock.tick(FPS)
     framecount += 1
