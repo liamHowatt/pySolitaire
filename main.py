@@ -38,12 +38,13 @@ WS = (900,600) # initial window size
 pygame.display.set_caption("Solitaire by Trent and Liam")
 window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
-bg = pygame.Surface(MONITOR_RESOLUTION, flags=pygame.HWSURFACE)
+bg = pygame.Surface(MONITOR_RESOLUTION, flags=pygame.HWSURFACE).convert()
 text = pygame.font.Font("McLaren-Regular.ttf", 8)
 pendingSizeChange = False
 # Showing a relevant icon to our game
-icon = pygame.image.load("resource/icon.png")
+icon = pygame.image.load("resource/icon.png").convert()
 pygame.display.set_icon(icon)
+cardback = pygame.image.load("resource/cardback.jpg").convert()
 
 # Dynamic Scaling limited to Windows until we find out figure out other system specific calls
 if platform == "win32":
@@ -82,7 +83,7 @@ while True:
     for row in range(len(table)):
         for column in range(7):
             if table[row][column] != None:
-                rect = (( (column*(3/22)+(1/22))*WS[X], 10*row+10), (WS[X]*(1/11),WS[X]*(7/55)))
+                rect = (( (column*(3/22)+(1/22))*WS[X], 10*row+10), (WS[X]*(1/11),WS[X]*(581/4400)))
                 pygame.draw.rect(bg, (0,0,0), rect, 3)
                 pygame.draw.rect(bg, (255,255,255), rect, 0) # card outline
 
