@@ -44,7 +44,7 @@ pendingSizeChange = False
 # Showing a relevant icon to our game
 icon = pygame.image.load("resource/icon.png").convert()
 pygame.display.set_icon(icon)
-cardback = pygame.image.load("resource/cardback.jpg").convert()
+cardback = pygame.image.load("resource/cardback.png").convert()
 
 # Dynamic Scaling limited to Windows until we find out figure out other system specific calls
 if platform == "win32":
