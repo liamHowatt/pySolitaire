@@ -45,6 +45,8 @@ pendingSizeChange = False
 icon = pygame.image.load("resource/icon.png").convert()
 pygame.display.set_icon(icon)
 cardback = pygame.image.load("resource/cardback.png").convert()
+cardHeightWidthRatio = cardback.get_rect()[3] / cardback.get_rect()[2]
+sizedCardback = pygame.transform.scale(cardback, (int(WS[X]/11), int(WS[X]/11*cardHeightWidthRatio)))
 
 # Dynamic Scaling limited to Windows until we find out figure out other system specific calls
 if platform == "win32":
@@ -68,6 +70,7 @@ while True:
             exit()
         elif event.type == pygame.VIDEORESIZE:
             WS = event.size
+            sizedCardback = pygame.transform.scale(cardback, (int(WS[X]/11), int(WS[X]/11*cardHeightWidthRatio)))
             pendingSizeChange = True
 
     if framecount % FPS == 0: # things that happen every second
@@ -83,9 +86,9 @@ while True:
     for row in range(len(table)):
         for column in range(7):
             if table[row][column] != None:
-                rect = (( (column*(3/22)+(1/22))*WS[X], 10*row+10), (WS[X]*(1/11),WS[X]*(581/4400)))
-                pygame.draw.rect(bg, (0,0,0), rect, 3)
-                pygame.draw.rect(bg, (255,255,255), rect, 0) # card outline
+                rect = (( (column*(3/22)+(1/22))*WS[X], 10*row+10), (WS[X]/11,WS[X]/11*cardHeightWidthRatio))
+                bg.blit(sizedCardback, rect[0])
+                pygame.draw.rect(bg, (0,0,0), rect, 3) # card outline
 
     window.blit(bg,(0,0))
     pygame.display.flip()
