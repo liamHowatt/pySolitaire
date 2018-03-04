@@ -9,14 +9,6 @@ import pygame
 if platform == "win32":
     import win32api
 
-def getCardName(number):
-    # order: hearts, diamonds, clubs, spades
-    # order within each suit: A, 2-10, J, Q, K
-    suit = int(number/13)
-    face = number-(suit*13)
-    return ["ace","2","3","4","5","6","7","8","9","10","jack","queen","king"][face]+\
-        " of " + ["hearts","diamonds","clubs","spades"][suit]
-
 table = []
 pile = []
 cards = list(range(52))
@@ -27,6 +19,7 @@ for y in range(7): # arranges cards on table
     for x in range(y,7):
         currentCard += 1
         table[y][x] = cards[currentCard]
+table.append([None]*7) # table stores a constant empty row
 while currentCard != 51:
     currentCard += 1
     pile.append(cards[currentCard])
@@ -39,13 +32,14 @@ pygame.display.set_caption("Solitaire by Trent and Liam")
 window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION, flags=pygame.HWSURFACE).convert()
-text = pygame.font.Font("McLaren-Regular.ttf", 8)
+text = pygame.font.Font("resource/Courier Prime Sans Bold.ttf", 48) # initialized large then scaled down
 pendingSizeChange = False
 # Showing a relevant icon to our game
 icon = pygame.image.load("resource/icon.png").convert()
 pygame.display.set_icon(icon)
 cardback = pygame.image.load("resource/cardback.png").convert()
 cardHeightWidthRatio = cardback.get_rect()[3] / cardback.get_rect()[2]
+# sizedCardback variable gets updated in the event loop
 sizedCardback = pygame.transform.scale(cardback, (int(WS[X]/11), int(WS[X]/11*cardHeightWidthRatio)))
 
 # Dynamic Scaling limited to Windows until we find out figure out other system specific calls
@@ -79,15 +73,34 @@ while True:
             window = pygame.display.set_mode(WS, pygame.RESIZABLE)
         print("fps="+str(round(clock.get_fps(),1)))
 
-    while table[-1] == [None]*7:
+    while table[-2] == [None]*7: # won't delete to constant empty row
         del(table[-1]) # deletes empty rows from memory
 
     bg.fill((0, 140, 30))
     for row in range(len(table)):
         for column in range(7):
             if table[row][column] != None:
-                rect = (( (column*(3/22)+(1/22))*WS[X], 10*row+10), (WS[X]/11,WS[X]/11*cardHeightWidthRatio))
-                bg.blit(sizedCardback, rect[0])
+                temporaryHeight = WS[X]/11*cardHeightWidthRatio
+                rect = ( ((column*(3/22)+(1/22))*WS[X],
+                    row*max(min((WS[Y]-WS[X]/11-temporaryHeight)/(len(table)-2),temporaryHeight/2),temporaryHeight/32)+WS[X]/22),
+                    (WS[X]/11, temporaryHeight) )
+                if table[row+1][column] == None: # determines if card should be face-up or not
+                    pygame.draw.rect(bg, (255,255,255), rect, 0)
+                    suit = int(table[row][column]/13)
+                    face = table[row][column]-(suit*13)
+                    cardType = ((["A","2","3","4","5","6","7","8","9","10","J","Q","K"][face],
+                        ["H","D","C","S"][suit]), [(255,0,0),(255,0,0),(0,0,0),(0,0,0)][suit])
+                    widthModifier = {True:2, False:1}[cardType[0][0] == "10"]
+                    temporaryText = text.render(cardType[0][0], 0, cardType[1])
+                    temporaryText = pygame.transform.scale(temporaryText,
+                        (int(rect[1][X]/4), int(rect[1][X]/4/temporaryText.get_rect()[2]*widthModifier*temporaryText.get_rect()[3])) )
+                    bg.blit(temporaryText, (rect[0][X]+rect[1][X]/8, rect[0][Y]+rect[1][Y]/12))
+                    temporaryText = text.render(cardType[0][1], 0, cardType[1])
+                    temporaryText = pygame.transform.scale(temporaryText,
+                        (int(rect[1][X]/4), int(rect[1][X]/4/temporaryText.get_rect()[2]*temporaryText.get_rect()[3])) )
+                    bg.blit(temporaryText, (rect[0][X]+rect[1][X]-temporaryText.get_rect()[2]-rect[1][X]/8, rect[0][Y]+rect[1][Y]/12))
+                else: # otherwise facedown
+                    bg.blit(sizedCardback, rect[0])
                 pygame.draw.rect(bg, (0,0,0), rect, 3) # card outline
 
     window.blit(bg,(0,0))
