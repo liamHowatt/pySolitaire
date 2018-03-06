@@ -77,13 +77,22 @@ while True:
             window = pygame.display.set_mode(WS, pygame.RESIZABLE)
         print("fps="+str(round(clock.get_fps(),1)))
 
-    while table[-2] == [None]*7: # won't delete to constant empty row
+    while table[-2] == [None]*7 and len(table) > 2: # won't delete to constant empty row
         del(table[-1]) # deletes empty rows from memory
 
     bg.fill((0, 140, 30))
     pygame.draw.rect(bg, (0, 94, 20), ((0,0), (WS[X], topOffset)))
-    bg.blit(sizedCardback, (WS[X]/22, WS[X]/22))
-    pygame.draw.rect(bg, (0,0,0), (((WS[X]/22, WS[X]/22)), (WS[X]/11, temporaryHeight)), 3)
+    for i in [0,3,4,5,6]:
+        pygame.draw.rect(bg, (0, 140, 30), ((WS[X]*(3/22)*i+WS[X]/22, WS[X]/22), (WS[X]/11, temporaryHeight)))
+    for i in [(3,"H"),(4,"D"),(5,"C"),(6,"S")]:
+        temporaryText = text.render(i[1], 0, (0, 94, 20))
+        temporaryText = pygame.transform.scale(temporaryText,
+            (int(WS[X]/44), int(WS[X]/44/temporaryText.get_rect()[2]*temporaryText.get_rect()[3])) )
+        bg.blit(temporaryText,
+            ((WS[X]*(3/22)*i[0]+WS[X]/22+(WS[X]/22-temporaryText.get_rect()[2]/2)), (WS[X]/22+temporaryHeight/2-temporaryText.get_rect()[3]/2)))
+    if len(pile):
+        bg.blit(sizedCardback, (WS[X]/22, WS[X]/22))
+        pygame.draw.rect(bg, (0,0,0), ((WS[X]/22, WS[X]/22), (WS[X]/11, temporaryHeight)), 3)
     for row in range(len(table)):
         for column in range(7):
             if table[row][column] != None:
