@@ -33,7 +33,7 @@ window = pygame.display.set_mode(WS, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION, flags=pygame.HWSURFACE).convert()
 text = pygame.font.Font("resource/Courier Prime Sans Bold.ttf", 48) # initialized large then scaled down
-pendingSizeChange = False
+pendingSizeChange = True
 # Showing a relevant icon to our game
 icon = pygame.image.load("resource/icon.png").convert()
 pygame.display.set_icon(icon)
@@ -64,8 +64,12 @@ while True:
             exit()
         elif event.type == pygame.VIDEORESIZE:
             WS = event.size
-            sizedCardback = pygame.transform.scale(cardback, (int(WS[X]/11), int(WS[X]/11*cardHeightWidthRatio)))
             pendingSizeChange = True
+
+    if pendingSizeChange:
+        temporaryHeight = WS[X]/11*cardHeightWidthRatio
+        sizedCardback = pygame.transform.scale(cardback, (int(WS[X]/11), int(temporaryHeight)))
+        topOffset = WS[X]/11+temporaryHeight
 
     if framecount % FPS == 0: # things that happen every second
         if pendingSizeChange:  # resizes every second instead of every frame
@@ -77,12 +81,14 @@ while True:
         del(table[-1]) # deletes empty rows from memory
 
     bg.fill((0, 140, 30))
+    pygame.draw.rect(bg, (0, 94, 20), ((0,0), (WS[X], topOffset)))
+    bg.blit(sizedCardback, (WS[X]/22, WS[X]/22))
+    pygame.draw.rect(bg, (0,0,0), (((WS[X]/22, WS[X]/22)), (WS[X]/11, temporaryHeight)), 3)
     for row in range(len(table)):
         for column in range(7):
             if table[row][column] != None:
-                temporaryHeight = WS[X]/11*cardHeightWidthRatio
                 rect = ( ((column*(3/22)+(1/22))*WS[X],
-                    row*max(min((WS[Y]-WS[X]/11-temporaryHeight)/(len(table)-2),temporaryHeight/2),temporaryHeight/32)+WS[X]/22),
+                    row*max(min((WS[Y]-WS[X]/11-temporaryHeight-topOffset)/(len(table)-2),temporaryHeight/2),temporaryHeight/32)+WS[X]/22+topOffset),
                     (WS[X]/11, temporaryHeight) )
                 if table[row+1][column] == None: # determines if card should be face-up or not
                     pygame.draw.rect(bg, (255,255,255), rect, 0)
