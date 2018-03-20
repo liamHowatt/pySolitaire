@@ -42,22 +42,15 @@ pygame.display.set_caption("Solitaire by Trent and Liam")
 window = pygame.display.set_mode(ws, pygame.RESIZABLE)
 MONITOR_RESOLUTION = pygame.display.list_modes()[0]
 bg = pygame.Surface(MONITOR_RESOLUTION, flags=pygame.HWSURFACE).convert()
-if platform == "linux":
-    text = pygame.font.SysFont("liberationmono", 48) # initialized large then scaled down
-else:
-    # Trent, put a monspace unicode font in the statement below. Replace "SysFont" with "Font"
-    # if you're goint to use a font file instead of a system font
-    text = pygame.font.SysFont("", 48) # initialized large then scaled down
+text = pygame.font.Font('resource/LiberationMono.ttf', 256) # initialized large then scaled down
 pendingSizeChange = [True, ws]
 # Showing a relevant icon to our game
-icon = pygame.image.load("resource/icon.png").convert()
-pygame.display.set_icon(icon)
+pygame.display.set_icon(pygame.image.load("resource/icon.png"))
 cardback = pygame.image.load("resource/cardback.png").convert()
 cardHeightWidthRatio = cardback.get_rect()[3] / cardback.get_rect()[2]
 # sizedCardback variable gets updated in the event loop
 sizedCardback = pygame.transform.scale(cardback, (int(ws[X]/11), int(ws[X]/11*cardHeightWidthRatio)))
-
-# Dynamic Scaling limited to Windows until we find out figure out other system specific calls
+# VSync limited to Windows until we find out figure out other system specific calls
 if platform == "win32":
     device = win32api.EnumDisplayDevices()
     settings = win32api.EnumDisplaySettings(device.DeviceName, -1)
