@@ -9,9 +9,18 @@ import pygame
 if platform == "win32":
     import win32api
 
+def constrain(a, minimum, maximum):
+    if a < minimum:
+        return minimum
+    if a > maximum:
+        return maximum
+    return a
+
 SUITS = ("♥", "♦", "♣", "♠")
 table = []
 pile = []
+faceUps = []
+mousePos = (0,0)
 cards = list(range(52))
 shuffle(cards) # yes, this function changes the variable value "in place"
 currentCard = -1
@@ -39,7 +48,7 @@ else:
     # Trent, put a monspace unicode font in the statement below. Replace "SysFont" with "Font"
     # if you're goint to use a font file instead of a system font
     text = pygame.font.SysFont("", 48) # initialized large then scaled down
-pendingSizeChange = True
+pendingSizeChange = [True, ws]
 # Showing a relevant icon to our game
 icon = pygame.image.load("resource/icon.png").convert()
 pygame.display.set_icon(icon)
@@ -58,7 +67,7 @@ if platform == "win32":
 else:
     refreshRate = 60
 
-framecount = 0
+framecount = -1
 clock = pygame.time.Clock()
 FPS = refreshRate
 while True:
@@ -69,17 +78,25 @@ while True:
         if event.type == pygame.QUIT:
             exit()
         elif event.type == pygame.VIDEORESIZE:
-            ws = event.size
-            pendingSizeChange = True
-
-    if pendingSizeChange:
-        temporaryHeight = ws[X]/11*cardHeightWidthRatio
-        sizedCardback = pygame.transform.scale(cardback, (int(ws[X]/11), int(temporaryHeight)))
-        topOffset = ws[X]/11+temporaryHeight
+            pendingSizeChange = [True, event.size]
+        elif event.type == pygame.MOUSEMOTION:
+            mousePos = event.pos
+        """
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            for column in range(7):
+                if mousePos[X] >= column * 
+        """
 
     if framecount % FPS == 0: # things that happen every second
-        if pendingSizeChange:  # resizes every second instead of every frame
-            pendingSizeChange = False
+        if pendingSizeChange[0]:  # resizes every second instead of every frame
+            pendingSizeChange[0] = False
+            ws = pendingSizeChange[1]
+            cw = ws[X]/11 # card width
+            hcw = cw/2 # half card width
+            thcw = cw * 1.5 # three halves card width
+            ch = cw*cardHeightWidthRatio # card height
+            sizedCardback = pygame.transform.scale(cardback, (int(cw), int(ch)))
+            topOffset = cw+ch
             window = pygame.display.set_mode(ws, pygame.RESIZABLE)
         print("fps="+str(round(clock.get_fps(),1)))
 
@@ -89,23 +106,23 @@ while True:
     bg.fill((0, 140, 30))
     pygame.draw.rect(bg, (0, 94, 20), ((0,0), (ws[X], topOffset)))
     for i in [0,3,4,5,6]:
-        pygame.draw.rect(bg, (0, 140, 30), ((ws[X]*(3/22)*i+ws[X]/22, ws[X]/22), (ws[X]/11, temporaryHeight)))
+        pygame.draw.rect(bg, (0, 140, 30), ((thcw*i+hcw, hcw), (cw, ch)))
     for i in zip(range(3,7), SUITS):
         temporaryText = text.render(i[1], 0, (0, 94, 20))
         temporaryText = pygame.transform.scale(temporaryText,
             (int(ws[X]/44), int(ws[X]/44/temporaryText.get_rect()[2]*temporaryText.get_rect()[3])) )
         bg.blit(temporaryText,
-            ((ws[X]*(3/22)*i[0]+ws[X]/22+(ws[X]/22-temporaryText.get_rect()[2]/2)), (ws[X]/22+temporaryHeight/2-temporaryText.get_rect()[3]/2)))
+            ((thcw*i[0]+hcw+(hcw-temporaryText.get_rect()[2]/2)), (hcw+ch/2-temporaryText.get_rect()[3]/2)))
     if len(pile):
-        bg.blit(sizedCardback, (ws[X]/22, ws[X]/22))
-        pygame.draw.rect(bg, (0,0,0), ((ws[X]/22, ws[X]/22), (ws[X]/11, temporaryHeight)), 3)
+        bg.blit(sizedCardback, (hcw, hcw))
+        pygame.draw.rect(bg, (0,0,0), ((hcw, hcw), (cw, ch)), 3)
     for row in range(len(table)):
         for column in range(7):
             if table[row][column] != None:
-                rect = ( ((column*(3/22)+(1/22))*ws[X],
-                    row*max(min((ws[Y]-ws[X]/11-temporaryHeight-topOffset)/(len(table)-2),temporaryHeight/2),temporaryHeight/32)+ws[X]/22+topOffset),
-                    (ws[X]/11, temporaryHeight) )
-                if table[row+1][column] == None: # determines if card should be face-up or not
+                rect = ( ((column*thcw+hcw),row*constrain((ws[Y]-cw-ch-topOffset)/(len(table)-2),ch/32,ch/2)+hcw+topOffset), (cw, ch) )
+                if table[row+1][column] == None and table[row][column] not in faceUps: # determines if card should be face-up or not
+                    faceUps.append(table[row][column])
+                if table[row][column] in faceUps:
                     pygame.draw.rect(bg, (255,255,255), rect, 0)
                     suit = int(table[row][column]/13)
                     face = table[row][column]-(suit*13)
