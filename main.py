@@ -16,9 +16,29 @@ def constrain(a, minimum, maximum):
         return maximum
     return a
 
+def getCardType(cardID):
+    suit = int(cardID/13)
+    face = cardID-(suit*13)
+    return ((FACES[face], SUITS[suit]), [(255,0,0),(255,0,0),(0,0,0),(0,0,0)][suit])
+    # returns (("A","♠"), (0,0,0))
+
+def faceMath(face, increment):
+    if not increment:
+        return face
+    index = FACES.index(face)
+    output = index + increment
+    if output < 0 or output > 12:
+        return -1
+    return FACES[output]
+
+def cardVerticalPos():
+    return row*constrain((ws[Y]-cw-ch-topOffset)/(len(table)-2),ch/32,ch/2)+hcw+topOffset
+
 SUITS = ("♥", "♦", "♣", "♠")
+FACES = ("A","2","3","4","5","6","7","8","9","10","J","Q","K")
 table = []
 pile = []
+hand = [[]]
 faceUps = []
 mousePos = (0,0)
 cards = list(range(52))
@@ -62,25 +82,11 @@ else:
 
 framecount = -1
 clock = pygame.time.Clock()
-FPS = refreshRate
 while True:
-    clock.tick(FPS)
+    clock.tick(refreshRate)
     framecount += 1
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            exit()
-        elif event.type == pygame.VIDEORESIZE:
-            pendingSizeChange = [True, event.size]
-        elif event.type == pygame.MOUSEMOTION:
-            mousePos = event.pos
-        """
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            for column in range(7):
-                if mousePos[X] >= column * 
-        """
-
-    if framecount % FPS == 0: # things that happen every second
+    if framecount % refreshRate == 0: # things that happen every second
         if pendingSizeChange[0]:  # resizes every second instead of every frame
             pendingSizeChange[0] = False
             ws = pendingSizeChange[1]
@@ -93,7 +99,52 @@ while True:
             window = pygame.display.set_mode(ws, pygame.RESIZABLE)
         print("fps="+str(round(clock.get_fps(),1)))
 
-    while table[-2] == [None]*7 and len(table) > 2: # won't delete to constant empty row
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            exit()
+        elif event.type == pygame.VIDEORESIZE:
+            pendingSizeChange = [True, event.size]
+        elif event.type == pygame.MOUSEMOTION:
+            mousePos = event.pos
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1: # click event
+            for column in range(7):
+                if mousePos[X] >= column * thcw + hcw and mousePos[X] <= (column+1) * thcw:
+                    break
+            else:
+                continue
+            numCardsInColumn = 0
+            while table[numCardsInColumn][column] != None:
+                numCardsInColumn += 1
+            for row in reversed(range(numCardsInColumn)):
+                if mousePos[Y] >= cardVerticalPos():
+                    break
+            else:
+                if column == hand[1] and mousePos[Y] >= topOffset + hcw and mousePos[Y] <= ws[Y] - hcw:
+                    for i,card in enumerate(hand[0]):
+                        table.append([None]*7)
+                        table[i+numCardsInColumn][column] = card
+                    hand = [[]]
+                continue
+            if (row == numCardsInColumn-1 and mousePos[Y] > cardVerticalPos() + ch)\
+                or (table[row][column] not in faceUps and table[row+1][column] != None):
+                continue
+            if hand == [[]]:
+                hand.append(column)
+                for i in range(row, numCardsInColumn):
+                    hand[0].append(table[i][column])
+                    table[i][column] = None
+                continue
+            if table[row][column] in faceUps:
+                heldCard = getCardType(hand[0][0])
+                targetCard = getCardType(table[row][column])
+                if faceMath(heldCard[0][0], 1) != targetCard[0][0] or heldCard[0][1] == targetCard[0][1]:
+                    continue
+            for i,card in enumerate(hand[0]):
+                table.append([None]*7)
+                table[row+i+1][column] = card
+            hand = [[]]
+
+    while table[-2] == [None]*7 and len(table) > 2: # won't delete the constant empty row
         del(table[-1]) # deletes empty rows from memory
 
     bg.fill((0, 140, 30))
@@ -106,21 +157,19 @@ while True:
             (int(ws[X]/44), int(ws[X]/44/temporaryText.get_rect()[2]*temporaryText.get_rect()[3])) )
         bg.blit(temporaryText,
             ((thcw*i[0]+hcw+(hcw-temporaryText.get_rect()[2]/2)), (hcw+ch/2-temporaryText.get_rect()[3]/2)))
-    if len(pile):
+    if pile:
         bg.blit(sizedCardback, (hcw, hcw))
         pygame.draw.rect(bg, (0,0,0), ((hcw, hcw), (cw, ch)), 3)
     for row in range(len(table)):
         for column in range(7):
             if table[row][column] != None:
-                rect = ( ((column*thcw+hcw),row*constrain((ws[Y]-cw-ch-topOffset)/(len(table)-2),ch/32,ch/2)+hcw+topOffset), (cw, ch) )
-                if table[row+1][column] == None and table[row][column] not in faceUps: # determines if card should be face-up or not
+                rect = ( ((column*thcw+hcw), cardVerticalPos()), (cw, ch) )
+                # determines if card should be face-up or not
+                if table[row+1][column] == None and table[row][column] not in faceUps and hand == [[]]:
                     faceUps.append(table[row][column])
                 if table[row][column] in faceUps:
                     pygame.draw.rect(bg, (255,255,255), rect, 0)
-                    suit = int(table[row][column]/13)
-                    face = table[row][column]-(suit*13)
-                    cardType = ((["A","2","3","4","5","6","7","8","9","10","J","Q","K"][face],
-                        SUITS[suit]), [(255,0,0),(255,0,0),(0,0,0),(0,0,0)][suit])
+                    cardType = getCardType(table[row][column])
                     widthModifier = {True:2, False:1}[cardType[0][0] == "10"]
                     temporaryText = text.render(cardType[0][0], 0, cardType[1])
                     temporaryText = pygame.transform.scale(temporaryText,
